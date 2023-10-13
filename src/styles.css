@@ -6,3 +6,16 @@ body {
   background-color: #0C8DC1 !important;
   color: white;
 }
+
+ul.pagination {
+    background-color: black;
+    display: flex !important;
+    justify-content:space-around !important;
+    list-style-type:none !important;
+    margin-top: 60px;
+    padding: 10px;
+}
+.activePostPage {
+  padding: 20px;
+  background: #098dc1;
+}
