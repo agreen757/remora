@@ -9,7 +9,7 @@ export default function Search(props) {
     const searchloc = props.searchloc;
 
     return (
-        <Box p="20" height="140px">
+        <Box pt="10" height="140px">
         <Stack direction={'row'} spacing={3}>
           <Box>
           <Text>Search Location</Text>
@@ -24,30 +24,31 @@ export default function Search(props) {
                 placeholder="Search Location"
               />
               </Box>
-              <Box>
+              <Box maxW={'70px'}>
               <Input
                   border={'1px solid white'}
                   id="results"
                   input=""
                   type="number"
                   onChange={handleResultsChange}
-                  placeholder="#results"
+                  placeholder="#"
                 />
               </Box>
             </Stack>
           </Box>
           </Box>
-          <Box pt={'23px'} >
+        </Stack>
+         <Box pt={'13px'} >
             <Button
+                size={'xs'}
                 border={'1px solid white'}
                 onClick={() => {
                   searchloc();
                 }}
               >
-                Search
+                Confirm
             </Button>
           </Box>
-        </Stack>
       </Box>
     )
 

@@ -8,7 +8,7 @@ export default function LocationsList(props) {
     const handleCheckboxChange = props.handleCheckboxChange;
 
     return (
-        <Box pl={20}>
+        <Box pt={'10px'}>
         <Stack direction='row' spacing={3}>
           <CheckboxGroup>
             {/** Create Box for each location that has the background image and has inner text centered at the bottom of the Box */}
