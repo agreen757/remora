@@ -386,7 +386,7 @@ export default function Campaign(props) {
     // Invoke when user click to request another page.
     const handlePageClick = (event) => {
       console.log(event)
-      const newOffset = (event.selected + 1 * itemsPerPage) % posts.length;
+      const newOffset = (event.selected * itemsPerPage) % posts.length;
       console.log(
         `User requested page number ${event.selected}, which is offset ${newOffset}`,
       );
