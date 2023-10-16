@@ -79,7 +79,7 @@ function App() {
     token: APIFY_TOKEN,
   });
 
-  const socketUrl = "ddj46x-38619.csb.app";
+  const socketUrl = "ddj46x-42223.csb.app";
 
   useEffect(() => {
     if (colorMode === "light") {
