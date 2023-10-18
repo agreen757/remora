@@ -63,7 +63,7 @@ function App() {
   const [campaignLocation, setCampaignLocation] = React.useState(null);
   const [selectedLocation, setSelectedLocation] = React.useState(null);
   const [selectedCampaign, setSelectedCampaign] = React.useState(null);
-  const [posts, setPosts] = React.useState([]);
+  //const [posts, setPosts] = React.useState([]);
   const handleChange = (event) => setSearchValue(event.target.value);
   const handleResultsChange = (event) => setResultsValue(event.target.value);
   const handleCheckboxChange = (event) =>
@@ -404,7 +404,6 @@ function App() {
               selectedLocation={selectedLocation}
               searchloc={searchloc}
               setCampaignName={setCampaignName}
-              posts={posts}
             />
           }
         />
@@ -412,14 +411,9 @@ function App() {
           path="/campaign/:id"
           element={
             <Campaign
-              campaignRunningStatus={campaignRunningStatus}
-              setCampaignRunningStatus={setCampaignRunningStatus}
-              setCampaignName={setCampaignName}
-              startCampaign={startCampaign}
-              stopCampaign={stopCampaign}
+              socket={socket}
               setSocket={setSocket}
               socketUrl={socketUrl}
-              setCampaignLocation={setCampaignLocation}
             />
           }
         />
