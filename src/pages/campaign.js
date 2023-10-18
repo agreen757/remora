@@ -18,13 +18,9 @@ import HeaderBar from "../components/header";
 import ReactPaginate from "react-paginate";
 export default function Campaign(props) {
   let {
-    startCampaign,
-    stopCampaign,
-    setCampaignName,
-    setCampaignLocation,
-    campaignRunningStatus,
-    setCampaignRunningStatus,
     socketUrl,
+    socket,
+    setSocket,
   } = props;
   const [queryParameters] = useSearchParams();
   const [posts, setPosts] = React.useState([]);
@@ -35,7 +31,9 @@ export default function Campaign(props) {
   let { id } = useParams();
   const [initialized, setInitialized] = React.useState(false);
   const [noPosts, setNoPosts] = React.useState(false);
-  const [socket, setSocket] = React.useState(null);
+  const [campaignName, setCampaignName] = React.useState(null);
+  const [campaignLocation, setCampaignLocation] = React.useState(null);
+  const [campaignRunningStatus, setCampaignRunningStatus] = React.useState(false);
 
   //let socket = new WebSocket("wss://" + socketUrl);
   //remora-test-4
@@ -106,19 +104,23 @@ export default function Campaign(props) {
       if (parsed.reason === "campaign_posts_data") {
         console.log('in here')
         let name = parsed.campaignName;
-        console.log(name,id)
+        let p_data = [];
+        console.log(parsed)
         if (name === id) {
-          let mergedPosts = parsed.posts.reduce(
-            (accumulator, currentObject) => {
-              return accumulator.concat(currentObject.posts);
-            },
-            [],
-          );
-          let k = posts;
-          k.push.apply(k, mergedPosts);
-          console.log(k);
-          //sort by date;
-          setPosts(k);
+
+          for (var i in parsed.posts) {
+            let row = parsed.posts[i];
+
+            if (row.posts && row.posts.length > 0) {
+              for (var k in row.posts) {
+                let p = row.posts[k];
+
+                p_data.push(p);
+
+              }
+            }
+          }
+          setPosts(p_data);
         }
 
         //results will be posts from the campaign to fill posts
@@ -178,25 +180,27 @@ export default function Campaign(props) {
           if (ele.posts.length > 0) {
             return ele.posts;
           }
-      });
+        });
 
-      let mergedPosts = pp.reduce((accumulator, currentObject) => {
+        let mergedPosts = pp.reduce((accumulator, currentObject) => {
           return accumulator.concat(currentObject.posts);
-      }, []);
-      let k = posts;
+        }, []);
+        let k = posts;
 
-      k.push.apply(k, mergedPosts);
+        k.push.apply(k, mergedPosts);
 
-      //remove duplicates
-      k = k.filter((item, index) => {
-          return (
-            k.findIndex((item2) => {
-              return item2.post.id === item.post.id;
-            }) === index
-          );
-      });
-
-      setPosts(k);
+        //remove duplicates
+        k = k.filter((item, index) => {
+            return (
+              k.findIndex((item2) => {
+                return item2.post.id === item.post.id;
+              }) === index
+            );
+        });
+        k.sort(function (a, b) {
+          return new Date(b.post.time) - new Date(a.post.time);
+        })
+        setPosts(k);
       if (!initialized)
         setInitialized(true);
       } else {
@@ -207,6 +211,79 @@ export default function Campaign(props) {
 
 
   }
+
+  const stopCampaign = async () => {
+    console.log("stopCampaign");
+    let input = {
+      reason: "stop_campaign",
+      campaignName: campaignName,
+    };
+    setCampaignRunningStatus(false);
+    closeSocket();
+    let response = await fetch("https://" + socketUrl + "/stop", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
+
+    /*try {
+      await socket.send(JSON.stringify(input));
+    } catch (error) {
+      console.log(error);
+      let socket = new WebSocket(`wss://ddj46x-41965.csb.app/`);
+      await socket.send(JSON.stringify(input));
+    }*/
+  };
+  const startCampaign = async () => {
+    //get selectedLocation
+    //let location = selectedLocation;
+    
+    //setSearching(true);
+    //create input for Apify task
+    let input = {
+      reason: "start_campaign",
+      info: {
+        resultsLimit: 200,
+        resultsType: "posts",
+        searchLimit: 2,
+        extendOutputFunction: "",
+        extendScraperFunction: "",
+        customData: { campaignName: campaignName },
+      },
+      input: {
+        directUrls: [campaignLocation],
+        proxy: {
+          useApifyProxy: true,
+          apifyProxyGroups: ["RESIDENTIAL"],
+        },
+      },
+    };
+
+    let response = await fetch("https://" + socketUrl + "/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
+    setListening(true);
+    setCampaignRunningStatus(true);
+
+    /*let dsetid = 'GOTL6eBOUUfGKUlD6';
+    const { items } = await client
+            .dataset(dsetid)
+            .listItems();*/
+
+    /*let run = await client.actor("zmxouNS7LxOt2UPUD").call(input);
+    const { items } = await client
+            .dataset(run.defaultDatasetId)
+            .listItems();
+    console.log(items);
+    setPosts(items[0].posts);
+    setSearching(false);*/
+  };
 
 
   //establish connection with websocket server
@@ -233,10 +310,16 @@ export default function Campaign(props) {
     // (This could be items from props; or items loaded in a local state
     // from an API endpoint with useEffect and useSt
 
+    const [itemOffset, setItemOffset] = React.useState(0);
+
     const endOffset = itemOffset + itemsPerPage;
     console.log(`Loading items from ${itemOffset} to ${endOffset}`);
     const currentItems = posts.slice(itemOffset, endOffset);
     const pageCount = Math.ceil(posts.length / itemsPerPage);
+
+
+
+
 
     // Invoke when user click to request another page.
     const handlePageClick = (event) => {
@@ -252,23 +335,25 @@ export default function Campaign(props) {
     useEffect(()=>{
 
     },[posts])
+    //return as a React.memo() wrapped component
 
     return (
-      <>
+      <React.Fragment>
         <PostList posts={currentItems} />
         <ReactPaginate
-          breakLabel="..."
-          nextLabel="next >"
-          onPageChange={handlePageClick}
-          pageRangeDisplayed={5}
+          previousLabel={"← Previous"}
+          nextLabel={"Next →"}
           pageCount={pageCount}
-          previousLabel="< previous"
-          renderOnZeroPageCount={null}
-          containerClassName="pagination"
-          activeLinkClassName="activePostPage"
-          disableInitialCallback={false}
+          onPageChange={handlePageClick}
+          containerClassName={"pagination"}
+          previousLinkClassName={"pagination__link"}
+          nextLinkClassName={"pagination__link"}
+          disabledClassName={"pagination__link--disabled"}
+          activeClassName={"pagination__link--active"}
+          breakLabel={"..."}
+          breakClassName={"pagination__link"}
         />
-      </>
+      </React.Fragment>
     );
   }
 

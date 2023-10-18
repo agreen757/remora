@@ -19,25 +19,3 @@ ul.pagination {
   padding: 20px;
   background: #098dc1;
 }
-.red{
-  background: #f13f3ffa;
-}
-.circle {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  box-shadow: 0px 0px 1px 1px #0000001a;
-}
-
-.pulse {
-  animation: pulse-animation 2s infinite;
-}
-
-@keyframes pulse-animation {
-  0% {
-    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
-  }
-  100% {
-    box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
-  }
-}
